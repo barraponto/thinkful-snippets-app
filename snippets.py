@@ -36,9 +36,10 @@ def get(name):
     cursor = connection.cursor()
     command = "select message from snippets where keyword=%s"
     cursor.execute(command, (name,))
-    connection.commit()
     logging.debug("Snippet retrieved succesfully.")
-    return cursor.fetchone()
+    row =  cursor.fetchone()
+    connection.commit()
+    return row[0]
 
 
 def main():
@@ -70,7 +71,7 @@ def main():
         logging.info("Stored {!r} as {!r}".format(snippet, name[:10] + '...'))
     elif command == "get":
         snippet = get(**arguments)
-        logging.info("Retrieved snippet:\n {}".format(snippet[0]))
+        logging.info("Retrieved snippet:\n {}".format(snippet))
 
 if __name__ == '__main__':
     main()
