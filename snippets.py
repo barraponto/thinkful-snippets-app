@@ -42,17 +42,17 @@ def get(name):
     Returns the snippet.
     """
     logging.info("Retrieving snippet {!r}".format(name))
-    cursor = connection.cursor()
     command = "select message from snippets where keyword=%s"
-    cursor.execute(command, (name,))
-    logging.debug("Snippet retrieved succesfully.")
-    row =  cursor.fetchone()
+    with connection, connection.cursor() as cursor:
+        cursor.execute(command, (name,))
+        row = cursor.fetchone()
+
     if not row:
         logging.error('Snippet {!r} not found.'.format(name))
-        connection.comit()
         return None
-    connection.commit()
-    return row[0]
+    else:
+        logging.debug("Snippet retrieved succesfully.")
+        return row[0]
 
 
 def main():
