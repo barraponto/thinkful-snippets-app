@@ -42,8 +42,15 @@ def main():
     get_parser.add_argument("name", help="The name of the snippet")
 
 
-    arguments = parser.parse_known_args(sys.argv[1:])
-    print(arguments)
+    arguments = vars(parser.parse_args(sys.argv[1:]))
+    command = arguments.pop("command")
+
+    if command == "put":
+        name, snippet = put(**arguments)
+        logging.info("Stored {!r} as {!r}".format(snippet, name))
+    elif command == "get":
+        snippet = get(**arguments)
+        logging.info("Retrieved snippet:\n {!r}".format(snippet))
 
 if __name__ == '__main__':
     main()
