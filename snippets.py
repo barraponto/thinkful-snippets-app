@@ -38,6 +38,10 @@ def get(name):
     cursor.execute(command, (name,))
     logging.debug("Snippet retrieved succesfully.")
     row =  cursor.fetchone()
+    if not row:
+        logging.error('Snippet {!r} not found.'.format(name))
+        connection.comit()
+        return None
     connection.commit()
     return row[0]
 
@@ -71,7 +75,12 @@ def main():
         logging.info("Stored {!r} as {!r}".format(snippet, name[:10] + '...'))
     elif command == "get":
         snippet = get(**arguments)
-        logging.info("Retrieved snippet:\n {}".format(snippet))
+        if snippet is None:
+            logging.info("No snippet retrieved.")
+        else:
+            logging.info("Retrieved snippet:\n {}".format(snippet))
+
+
 
 if __name__ == '__main__':
     main()
