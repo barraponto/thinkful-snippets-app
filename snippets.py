@@ -70,6 +70,21 @@ def catalog():
 
     return keywords
 
+def search(query):
+    """Search for snippets containing query.
+
+    Returns a list of snippets.
+    """
+    logging.info(
+        "Retrieving list of snippets matching query {!r}.".format(query))
+    command = "select keyword, message from snippets where message like %s"
+
+    with connection, connection.cursor() as cursor:
+        cursor.execute(command, ('%' + query + '%',))
+        rows = [row for row in cursor.fetchall()]
+
+    return rows
+
 
 def main():
     """Main function"""
@@ -95,6 +110,11 @@ def main():
     logging.debug("Constructing catalog subparser")
     catalog_parser = subparsers.add_parser("catalog", help="Store a snippet")
 
+    # Subparser for the search command
+    logging.debug("Constructing search subparser")
+    search_parser = subparsers.add_parser("search", help="Store a snippet")
+    search_parser.add_argument("query", help="A query to search for in snippets.")
+
 
     arguments = vars(parser.parse_args(sys.argv[1:]))
     command = arguments.pop("command")
@@ -113,6 +133,13 @@ def main():
         logging.info(
             "Sucessfully retrieved keywords catalog:\n{}".format(
                 '\n'.join(keywords)))
+    elif command == "search":
+        rows = search(**arguments)
+        log_message = "Sucessfully retrieved snippets:\n"
+        log_message += '\n'.join(
+            '{!r}: {!r}'.format(name, snippet[:10] + '...')
+            for name, snippet in rows)
+        logging.info(log_message)
 
 
 
