@@ -56,6 +56,20 @@ def get(name):
         logging.debug("Snippet retrieved succesfully.")
         return row[0]
 
+def catalog():
+    """Get the list of existing keywords in database.
+
+    Returns a list of keywords.
+    """
+    logging.info("Retrieving list of snippet keywords.")
+    command = "select keyword from snippets"
+
+    with connection, connection.cursor() as cursor:
+        cursor.execute(command)
+        keywords = [row[0] for row in cursor.fetchall()]
+
+    return keywords
+
 
 def main():
     """Main function"""
@@ -77,6 +91,10 @@ def main():
     get_parser = subparsers.add_parser("get", help="Store a snippet")
     get_parser.add_argument("name", help="The name of the snippet")
 
+    # Subparser for the catalog command
+    logging.debug("Constructing catalog subparser")
+    catalog_parser = subparsers.add_parser("catalog", help="Store a snippet")
+
 
     arguments = vars(parser.parse_args(sys.argv[1:]))
     command = arguments.pop("command")
@@ -90,6 +108,11 @@ def main():
             logging.info("No snippet retrieved.")
         else:
             logging.info("Retrieved snippet:\n {}".format(snippet))
+    elif command == "catalog":
+        keywords = catalog()
+        logging.info(
+            "Sucessfully retrieved keywords catalog:\n{}".format(
+                '\n'.join(keywords)))
 
 
 
