@@ -20,19 +20,21 @@ def put(name, snippet):
     """
     logging.info(
         "Storing snippet {!r} {!r}".format(name, snippet[:10] + '...'))
-    cursor = connection.cursor()
-    command = "insert into snippets values (%s, %s)"
-    try:
-        cursor.execute(command, (name, snippet))
-    except psycopg2.IntegrityError as error:
-        if error.pgcode == '23505':
-            connection.rollback()
-            logging.debug("Updating existent entry {!r}".format(name))
-            command = "update snippets set message=%s where keyword=%s"
-            cursor.execute(command, (snippet, name))
-        else:
-            raise error
-    connection.commit()
+
+    insert_command = "insert into snippets values (%s, %s)"
+    update_command = "update snippets set message=%s where keyword=%s"
+
+    with connection, connection.cursor() as cursor:
+        try:
+            cursor.execute(insert_command, (name, snippet))
+        except psycopg2.IntegrityError as error:
+            if error.pgcode == '23505':
+                logging.debug("Updating existent entry {!r}".format(name))
+                connection.rollback()
+                cursor.execute(update_command, (snippet, name))
+            else:
+                raise error
+
     logging.debug("Snippet stored succesfully.")
     return name, snippet
 
